@@ -1,0 +1,12 @@
+/.ipynb_checkpoints
+/assets/*
+/bin/*
+/data/*
+/images/*
+/maps/*
+/models/*
+/rules/*
+/scenes/*
+/jupyter/output/*
+/dsas.git
+/scripts/generate_city/__pycache__/*
