@@ -26,22 +26,14 @@ SCRIPTS_DIR = BASE_DIR / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-# import sys
-# sys.path.append('scripts')
-# sys.path.append(r"scripts/generate_city")
-from generate_city.create_network import *
-from generate_city.create_photo_EQR import *
+from scripts.generate_city.network import *
+from scripts.generate_city.snapshot import *
+from scripts.generate_city.environment import *
+from scripts.generate_city.objects import *
 
-
-#TODO: dodac jako procedure
-#wlaczenie nieba
-
-panoramaSettings = ce.getPanorama()
-panoramaSettings.setVisible(True)
-ce.setPanorama(panoramaSettings)
-
+showPanorama()
     
-# create_random_city()
+create_random_city()
 
 #create_photo_set()
 
@@ -49,22 +41,13 @@ ce.setPanorama(panoramaSettings)
 #niebieskie
 
 #wylaczenie nieba
-panoramaSettings = ce.getPanorama()
-panoramaSettings.setVisible(False)
-ce.setPanorama(panoramaSettings)
+hidePanorama()
 
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('street'))
-for o in objects:
-    ce.setAttributeSource(o,'/ce/rule/Display_Textures',"USER")
-    ce.setAttribute(o,'/ce/rule/Display_Textures',False)
 
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('lot'))
-for buildings in objects:
-    ce.setRuleFile(buildings, 'rules/dilatation_street.cga')
-    
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('LotCorner'))
-for o in objects:
-    ce.setRuleFile(o, 'none')
+setAttributeForStreets('/ce/rule/Display_Textures', False)
+removeRulesFromCornerLots()
+setRuleFileForBuildings('rules/dilatation_street.cga')
+
 
 
 #generowanie obrazow

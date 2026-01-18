@@ -8,5 +8,5 @@
 /rules/*
 /scenes/*
 /jupyter/output/*
-/dsas.git
+;/dsas.git
 /scripts/generate_city/__pycache__/*
