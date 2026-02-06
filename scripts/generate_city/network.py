@@ -1,15 +1,13 @@
-'''
-Created on 24-04-2021
-
-@author: Marcin Kutrzynski
-'''
 from cityengine import *
+
 ce = CE()
 
 import random
 
+
 def clear_city():
     pass
+
 
 def _normalize_cfg_name(name):
     if name is None:
@@ -119,7 +117,10 @@ def getStreetConfigurationByName(cfg_name=None):
 
             # Fuzzy match: Inspector names sometimes differ by spaces/underscores/case.
             if wanted_norm and _normalize_cfg_name(cfg_name_raw) == wanted_norm:
-                print("Using existing StreetConfiguration (normalized match):", cfg_name_raw)
+                print(
+                    "Using existing StreetConfiguration (normalized match):",
+                    cfg_name_raw,
+                )
                 return cfg
 
             # Fallback: some API wrappers only expose the label in str()/repr().
@@ -128,8 +129,15 @@ def getStreetConfigurationByName(cfg_name=None):
                 print("Using existing StreetConfiguration (string match):", ident)
                 return cfg
 
-            if wanted_norm and isinstance(ident, str) and _normalize_cfg_name(ident) == wanted_norm:
-                print("Using existing StreetConfiguration (normalized string match):", ident)
+            if (
+                wanted_norm
+                and isinstance(ident, str)
+                and _normalize_cfg_name(ident) == wanted_norm
+            ):
+                print(
+                    "Using existing StreetConfiguration (normalized string match):",
+                    ident,
+                )
                 return cfg
 
         print(
@@ -160,38 +168,39 @@ def createStreetConfigurationExample():
         ce.addLane(cfg, laneType="SIDEWALK", width=2.0)
     return cfg
 
+
 def create_random_city():
-    graphlayer = ce.addGraphLayer('streets')
-    vertices = [0,0,-1000,0,0,1000]
+    graphlayer = ce.addGraphLayer("streets")
+    vertices = [0, 0, -1000, 0, 0, 1000]
     graph = ce.createGraphSegments(graphlayer, vertices)
-    ce.setName(graph,'main_road')
-    
-    vertices = [100,0,-1000,100,0,1000]
+    ce.setName(graph, "main_road")
+
+    vertices = [100, 0, -1000, 100, 0, 1000]
     graph = ce.createGraphSegments(graphlayer, vertices)
-    ce.setName(graph,'right_road')
-    
-    vertices = [-100,0,-1000,-100,0,1000]
+    ce.setName(graph, "right_road")
+
+    vertices = [-100, 0, -1000, -100, 0, 1000]
     graph = ce.createGraphSegments(graphlayer, vertices)
-    ce.setName(graph,'left_road')
-    
+    ce.setName(graph, "left_road")
+
     side = 1
     vertices = []
-    for z in range(-1100,1100,200):
+    for z in range(-1100, 1100, 200):
         side = side * -1
         vertices.extend([side * 200, 0, z + random.randint(0, 300)])
-    
+
     graph = ce.createGraphSegments(graphlayer, vertices)
-    ce.setName(graph,'crossing1_road')
-    
+    ce.setName(graph, "crossing1_road")
+
     side = -1
     vertices = []
-    for z in range(-1100,1100,200):
+    for z in range(-1100, 1100, 200):
         side = side * -1
         vertices.extend([side * 200, 0, z + random.randint(0, 300)])
-    
+
     graph = ce.createGraphSegments(graphlayer, vertices)
-    ce.setName(graph,'crossing2_road')
-    
+    ce.setName(graph, "crossing2_road")
+
     cleanupSettings = CleanupGraphSettings()
     cleanupSettings.setIntersectSegments(True)
     cleanupSettings.setMergeNodes(False)
@@ -201,8 +210,8 @@ def create_random_city():
     cleanupSettings.setResolveConflictShapes(True)
     graphlayer = ce.getObjectsFrom(ce.scene, ce.isGraphLayer)
     ce.cleanupGraph(graphlayer, cleanupSettings)
-    
-    #konfiguracja ulic
+
+    # konfiguracja ulic
     streetCfg = getStreetConfigurationByName("Neighborhood_Alley_1Way_1VL_10m")
 
     # Collect ALL graph segments in the scene (streets)
@@ -221,74 +230,93 @@ def create_random_city():
         for seg in segments:
             ce.applyStreetConfigurationToSegment(seg, streetCfg)
 
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName('Block'))
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("Block"))
     for block in objects:
-        ce.setAttributeSource(block, '/ce/block/shapeCreation', "USER")
-        ce.setAttribute(block,'/ce/block/subdivisionRecursive',False)
-        ce.setAttributeSource(block,'/ce/block/subdivisionRecursive',"USER")
-        ce.setAttribute(block,'/ce/block/type','Offset Subdivision')
-        ce.setAttributeSource(block,'/ce/block/cornerWidth',"USER")
-        ce.setAttribute(block,'/ce/block/cornerWidth', random.randint(90, 200))
-    
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName("'Lot*'"))
+        ce.setAttributeSource(block, "/ce/block/shapeCreation", "USER")
+        ce.setAttribute(block, "/ce/block/subdivisionRecursive", False)
+        ce.setAttributeSource(block, "/ce/block/subdivisionRecursive", "USER")
+        ce.setAttribute(block, "/ce/block/type", "Offset Subdivision")
+        ce.setAttributeSource(block, "/ce/block/cornerWidth", "USER")
+        ce.setAttribute(block, "/ce/block/cornerWidth", random.randint(90, 200))
+
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("'Lot*'"))
     print("Shapes available:", len(objects))
     for shape in objects:
-        if ce.getStartRule(shape) == 'Default$Lot':
-            ce.setName(shape, 'lot')
-            ce.setRuleFile(shape, 'rules/paris.cga')  
-        elif ce.getStartRule(shape) == 'Lot':
-            ce.setName(shape, 'lot')
-            ce.setRuleFile(shape, 'rules/paris.cga')           
-        elif ce.getStartRule(shape) == 'Default$LotInner':
-            ce.setName(shape, 'lot')
-            ce.setRuleFile(shape, 'rules/paris.cga')
-        elif ce.getStartRule(shape) == 'Default$LotCorner':
-            ce.setName(shape, 'LotCorner')
-            ce.setRuleFile(shape, 'rules/paris.cga')     
+        if ce.getStartRule(shape) == "Default$Lot":
+            ce.setName(shape, "lot")
+            ce.setRuleFile(shape, "rules/paris.cga")
+        elif ce.getStartRule(shape) == "Lot":
+            ce.setName(shape, "lot")
+            ce.setRuleFile(shape, "rules/paris.cga")
+        elif ce.getStartRule(shape) == "Default$LotInner":
+            ce.setName(shape, "lot")
+            ce.setRuleFile(shape, "rules/paris.cga")
+        elif ce.getStartRule(shape) == "Default$LotCorner":
+            ce.setName(shape, "LotCorner")
+            ce.setRuleFile(shape, "rules/paris.cga")
         else:
-            ce.setName(shape, 'street')
-            ce.setRuleFile(shape, 'rules/Streets_Advanced/Advanced_Street.cga')
-        
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName('street'))
+            ce.setName(shape, "street")
+            ce.setRuleFile(shape, "rules/Streets_Advanced/Advanced_Street.cga")
+
+    # junctions = ce.getObjectsFrom(ce.scene, ce.withName("Shape"))
+    # for junction in junctions:
+    #     ce.setRuleFile(junction, "/ESRI.lib/rules/Streets/Node/Default_Node.cga")
+    #     ce.setStartRule(junction, "Start")
+
+    # /ESRI.lib/rules/Streets/Node/Default_Node.cga
+
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("street"))
     for street in objects:
-        #print( ce.getAttribute(street))
-        ce.setAttributeSource(street, '/ce/rule/Vehicles_per_km', "USER")
-        ce.setAttribute(street,'/ce/rule/Vehicles_per_km',random.randint(20,50))
-        #ce.setAttributeSource(block,'/ce/block/subdivisionRecursive',"USER")
-        #ce.setAttribute(block,'/ce/block/type','Offset Subdivision')
-    
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName('lot'))
+        # print( ce.getAttribute(street))
+        ce.setAttributeSource(street, "/ce/rule/Vehicles_per_km", "USER")
+        ce.setAttribute(street, "/ce/rule/Vehicles_per_km", random.randint(20, 50))
+        # ce.setAttributeSource(block,'/ce/block/subdivisionRecursive',"USER")
+        # ce.setAttribute(block,'/ce/block/type','Offset Subdivision')
+
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("lot"))
     for buildings in objects:
-        ce.setAttributeSource(buildings,'/ce/rule/High_LoD',"USER")
-        ce.setAttribute(buildings,'/ce/rule/High_LoD',True)
-        
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName('LotCorner'))
+        ce.setAttributeSource(buildings, "/ce/rule/High_LoD", "USER")
+        ce.setAttribute(buildings, "/ce/rule/High_LoD", True)
+
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("LotCorner"))
     for green in objects:
-        ce.setAttributeSource(green,'/ce/rule/High_LoD',"USER")
-        ce.setAttribute(green,'/ce/rule/High_LoD',True)
-        ce.setAttributeSource(green,'/ce/rule/ShowTrees',"USER")
-        ce.setAttribute(green,'/ce/rule/ShowTrees',"Realistic")       
-    
-    #chodnik     
-    objects = ce.getObjectsFrom(ce.scene,  ce.withName('street'))
+        ce.setAttributeSource(green, "/ce/rule/High_LoD", "USER")
+        ce.setAttribute(green, "/ce/rule/High_LoD", True)
+        ce.setAttributeSource(green, "/ce/rule/ShowTrees", "USER")
+        ce.setAttribute(green, "/ce/rule/ShowTrees", "Realistic")
+
+    # chodnik
+    objects = ce.getObjectsFrom(ce.scene, ce.withName("street"))
     for street in objects:
         print(ce.getStartRule(street))
-        if ce.getStartRule(street) == 'Default$Sidewalk':
+        if ce.getStartRule(street) == "Default$Sidewalk":
             print(ce.getAttributeList(street))
-            ce.setAttributeSource(street, '/ce/rule/Plantings', "USER")
-            ce.setAttribute(street,'/ce/rule/Plantings',True if random.randint(0,10)>5 else False)
-            ce.setAttributeSource(street, '/ce/rule/Sidewalk_Texture', "USER")
-            ce.setAttribute(street,'/ce/rule/Sidewalk_Texture','Cement Block Grey Running Bond')
-            ce.setAttributeSource(street, '/ce/rule/Sidewalk_Texture_Scale', "USER")
-            ce.setAttribute(street,'/ce/rule/Sidewalk_Texture_Scale',5)
-            ce.setAttributeSource(street, '/ce/rule/People_percentage', "USER")
-            ce.setAttribute(street,'/ce/rule/People_percentage',random.randint(0, 35))
-            ce.setAttributeSource(street, '/ce/rule/Tree.Name', "USER")
-            ce.setAttribute(street,'/ce/rule/Tree.Name','Yew')         
+            ce.setAttributeSource(street, "/ce/rule/Plantings", "USER")
+            ce.setAttribute(
+                street,
+                "/ce/rule/Plantings",
+                True if random.randint(0, 10) > 5 else False,
+            )
+            ce.setAttributeSource(street, "/ce/rule/Sidewalk_Texture", "USER")
+            ce.setAttribute(
+                street, "/ce/rule/Sidewalk_Texture", "Cement Block Grey Running Bond"
+            )
+            ce.setAttributeSource(street, "/ce/rule/Sidewalk_Texture_Scale", "USER")
+            ce.setAttribute(street, "/ce/rule/Sidewalk_Texture_Scale", 5)
+            ce.setAttributeSource(street, "/ce/rule/People_percentage", "USER")
+            ce.setAttribute(street, "/ce/rule/People_percentage", random.randint(0, 35))
+            ce.setAttributeSource(street, "/ce/rule/Tree.Name", "USER")
+            ce.setAttribute(street, "/ce/rule/Tree.Name", "Yew")
 
-    print("czekanie na rendering")     
+    junctions = ce.getObjectsFrom(ce.scene, ce.withName("Node"))
+    for junction in junctions:
+        print(junction)
+        ce.setRuleFile(junction, "/ESRI.lib/rules/Streets/Node/Default_Node.cga")
+        ce.setStartRule(junction, "Start")
+
+    print("czekanie na rendering")
     ce.generateModels(ce.getObjectsFrom(ce.scene))
     views = ce.getObjectsFrom(ce.get3DViews())
     views[0].frame()
-    ce.waitForUIIdle()    
+    ce.waitForUIIdle()
     print("koniec")
