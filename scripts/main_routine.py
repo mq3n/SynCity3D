@@ -6,7 +6,7 @@ Created on 24-04-2021
 #from scripting import *
 
 # get a CityEngine instance
-#import cityengine as ce
+#import cityengine as ceF
 #ce = CE()
 from cityengine import *
 ce = CE()
@@ -26,46 +26,39 @@ SCRIPTS_DIR = BASE_DIR / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-# import sys
-# sys.path.append('scripts')
-# sys.path.append(r"scripts/generate_city")
-from generate_city.create_network import *
-from generate_city.create_photo_EQR import *
+from generate_city.network import *
+from generate_city.snapshot import *
+from generate_city.environment import *
+from generate_city.objects import *
 
+#pamiętaj o ustawieniu w CE visibility setting wyłączenia Shapes i Graph Network (klawisze F10 i F11) - inaczej zdjęcia będą renderowane z widocznymi liniami podziału działek i sieci ulicznej
+#clear scene
+ce.delete(ce.getObjectsFrom(ce.scene))
 
-#TODO: dodac jako procedure
-#wlaczenie nieba
+showPanorama()
+hideGrid()
 
-panoramaSettings = ce.getPanorama()
-panoramaSettings.setVisible(True)
-ce.setPanorama(panoramaSettings)
-
-    
-# create_random_city()
-
-#create_photo_set()
+create_random_city()
+ce.setSelection(None)
+create_photo_set(cameraStep = 10, cameraHeight=5, prefix="x")
 
 #zmiana rol
 #niebieskie
 
 #wylaczenie nieba
-panoramaSettings = ce.getPanorama()
-panoramaSettings.setVisible(False)
-ce.setPanorama(panoramaSettings)
+hidePanorama()
 
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('street'))
-for o in objects:
-    ce.setAttributeSource(o,'/ce/rule/Display_Textures',"USER")
-    ce.setAttribute(o,'/ce/rule/Display_Textures',False)
+removeRulesFromCornerLots()
+setRuleFileForBuildings('rules/dilatation_street.cga')
+setStreetVisibility(False)
 
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('lot'))
-for buildings in objects:
-    ce.setRuleFile(buildings, 'rules/dilatation_street.cga')
-    
-objects = ce.getObjectsFrom(ce.scene,  ce.withName('LotCorner'))
-for o in objects:
-    ce.setRuleFile(o, 'none')
+ce.waitForUIIdle()
+create_photo_set(cameraStep = 10, cameraHeight=5, prefix="y")
 
+
+# set full view options
+#showGrid()
+#showPanorama()
 
 #generowanie obrazow
 
