@@ -37,7 +37,7 @@ def create_90_FOV(side, cnt, prefix, tilt):
     #filename = f"/{prefix}_snapshot_{side[3]}_{tilt}_{cnt}.png"
     #filename = "/" + prefix + "_snapshot_%s_%s_%s.png" % (side[3], tilt, cnt)
     viewport.snapshot(ce.toFSPath("images") + filename, 1920, 1920)
-    print("saved:" + prefix + "_" + str(cnt))
+    print("saved:" + prefix + "_" + side[3] + "_" +str(cnt))
 
 
 def make_tmp_snapshot(filename):

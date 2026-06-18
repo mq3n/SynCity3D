@@ -3,7 +3,7 @@ Created on Apr 19, 2026
 
 @author: pawel
 
-Changing values of specific <test_cga_script.cga> rule attribute - param_height
+Testing functionalities of python scripting in cityengine
 '''
 import sys
 if sys.platform.startswith('java'):
@@ -99,7 +99,7 @@ def take_a_snapshot(view,add_info=""):
     ce.waitForUIIdle()
             
     # take a snapshot
-    view.snapshot(ce.toFSPath(PHOTO_FILES_PATH)+ path)
+    view.snapshot(ce.toFSPath(PHOTO_FILES_PATH) + path)
 
 
 def print_render_settings(view):
@@ -162,7 +162,6 @@ def snapshot_test():
         take_a_snapshot(view, "no_frame")
         print_camera_info(view)
         
-        #default is none, it somehow adjust view to.. i dont know yet
         print("\nFRAME NONE")
         view.frame()
         time.sleep(1)
@@ -186,11 +185,10 @@ def snapshot_test():
         take_a_snapshot(view, "frame_shapes")
         print_camera_info(view)
         
-        
         #print_camera_info(view)
 
   
-     
+
 
 if __name__ == '__main__':
     print("\nScript initiated")

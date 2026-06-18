@@ -7,31 +7,51 @@ import re
 #OLD FILENAME: SynCity3D_m-1_1_snapshot_back_1.png
 #NEW FILENAME: m-1_SynCity3D_snapshot_back_11.png
 
+
+
+WORKSPACE_DIR = Path(r"C:\Users\WA\Desktop\badanie") # !! directory with our project and other projects (ESRI.lib)
+BASE_DIR = WORKSPACE_DIR / "syncity3D" 
+SCRIPTS_DIR = BASE_DIR / "scripts"
+
+# stage 1 - snapshots back, right, front, left, top, bottom 
+CE_SNAPSHOTS_DIR = BASE_DIR / "images"
+
+
+
 print(os.getcwd())
-IMAGES_DIR =  Path("images")
+IMAGES_DIR =  CE_SNAPSHOTS_DIR #Path("images")
 #ALL_IMAGES = [path for path in os.listdir(IMAGES_DIR) if re.search(".*\.png", path) and len(path.split("_")) == 6]
-COUNTER_MAP = {}
+COUNTER_MAP_COUNT = {}
+COUNTER_MAP_ADD = {}
 
 def set_counter_mapping(city_index):
     n_of_cities = {city for city, _ in city_index}
     for city in n_of_cities:
-        COUNTER_MAP[str(int(city))] = max([index for _, index in city_index])
+        COUNTER_MAP_COUNT[str(int(city))] = max([index for city_id, index in city_index if city_id == city])
     
-    #print(COUNTER_MAP)
+    #print(COUNTER_MAP_COUNT)
     n_of_cities = list(n_of_cities)
     n_of_cities.sort()
 
-    for city in n_of_cities:
-        COUNTER_MAP[city] += COUNTER_MAP[str(int(city)-1)]
     
-    COUNTER_MAP['0'] = 0
+    # move 1 key right
+    #COUNTER_MAP_ADD = {str(city): COUNTER_MAP_COUNT[str(int(city)-1)] for city in n_of_cities[1:] }
+    for city in n_of_cities[1:]:
+        COUNTER_MAP_ADD[str(city)] = COUNTER_MAP_COUNT[str(int(city)-1)]
 
+    COUNTER_MAP_ADD["0"] = 0
+    print(COUNTER_MAP_ADD)
+    
+    for city in n_of_cities[1:]:
+        COUNTER_MAP_ADD[city] += COUNTER_MAP_ADD[str(int(city)-1)]
+    
     print(n_of_cities)
-    print(COUNTER_MAP)
+    print(COUNTER_MAP_ADD)
+
 
 # actualize photo index, so city_id gets obsolete, we previously keep it, so files don't get overwritten 
-def get_new_index(current_index, n_city):
-    return str(int(current_index) + int(COUNTER_MAP[n_city]))
+def get_new_index(current_index: str, n_city: str):
+    return str(int(current_index) + int(COUNTER_MAP_ADD[n_city]))
 
 
 def rename_photo(path):
@@ -65,6 +85,8 @@ def rename_all_new_photos():
     #print("ALL IMAGES rename:", len(all_images))
     if all_images:
         city_index = [(path.split('_')[2], int(path.split('_')[5][:-4]) ) for path in all_images]
+        #print("CITY INDEX:", city_index) 
+
         set_counter_mapping(city_index)
     
         for file in all_images:

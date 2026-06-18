@@ -22,3 +22,4 @@ scripts/__pycache__/*
 /rules/oldies/*
 /rules/test*
 .vscode
+/dataset_stages/spheric_photos_and_masks/*.png

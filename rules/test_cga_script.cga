@@ -1,0 +1,42 @@
+version "2025.1"
+
+# Testing the connection between CGA rules and Python Scripting
+
+attr param_height = 10
+attr param_split_x = 1
+attr param_split_y = 1
+attr case_color = floor(rand(0, 3))
+
+attr MY_LIST = [1, 2, 3, 4]
+
+attr param_height2 = MY_LIST[0]
+
+
+Lot -->
+ 	print("Starting rule through scripting")
+ 	extrude(param_height2)
+ 	Mass
+ 	
+ 	
+ Mass -->
+ 	comp(f){all: Face}
+ 	
+ Face -->
+ 	print("0...")
+ 	split(x){param_split_x: Face_Split_Y | param_split_x: NIL}*
+ 	print("1...")
+ 	
+Face_Split_Y -->
+	split(y){param_split_y: Color | param_split_y: NIL}*
+	print("2...")
+
+Color -->
+	case case_color == 0: 
+		color(1, 0, 0)
+		X
+	case case_color == 1: 
+		color(0, 1, 0)
+ 		X
+ 	else:
+ 		color(0, 0, 1)
+ 		X

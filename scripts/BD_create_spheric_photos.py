@@ -11,8 +11,22 @@ from tqdm import tqdm
 
 print('ok')
 
-IMAGES_DIR =  Path("./images").resolve()
-SPHERIC_PHOTO_DIR = Path("./dataset").resolve()
+#IMAGES_DIR =  Path("./images").resolve()
+#SPHERIC_PHOTO_DIR = Path("./dataset").resolve()
+
+
+WORKSPACE_DIR = Path(r"C:\Users\WA\Desktop\badanie") # !! directory with our project and other projects (ESRI.lib)
+BASE_DIR = WORKSPACE_DIR / "syncity3D" 
+SCRIPTS_DIR = BASE_DIR / "scripts"
+
+# stage 1 - snapshots back, right, front, left, top, bottom 
+CE_SNAPSHOTS_DIR = BASE_DIR / "images"
+
+# HERE - stage 2 - spheric 'photos' and their segmention/semantic color masks
+SPHERIC_PHOTOS_DIR = BASE_DIR / "dataset_stages" / "spheric_photos_and_masks"
+
+
+IMAGES_DIR = CE_SNAPSHOTS_DIR
 
 SPACES = ["m-Normal", "m-1", "m-2"]
 SIDES = ['back','right','front','left','top','bottom']
@@ -89,14 +103,27 @@ def convertFromCE(index, prefix="m-Normal", tilt = 0):
     #e = py360convert.c2e(image,3040,6080,cube_format='horizon')
     e = py360convert.c2e(cubmap_dict, 3040, 6080, cube_format='dict', mode="biquadratic")
     eqr = Image.fromarray(e.astype('uint8'))
-    save_path = SPHERIC_PHOTO_DIR / f"{prefix}_SynCity3D_{index}.png"
+    save_path = SPHERIC_PHOTOS_DIR / f"{prefix}_SynCity3D_{index}.png"
     #print("SAVE PATH:", save_path)
     try:
         eqr.save(save_path)
         print("saved:", save_path)
+
+        
+
     except Exception:
         pass
     #eqr.save('./output/%s_%s_%s.png' % (prefix,index,tilt))
+    try:
+        for face, _ in faces2:
+            filepath = IMAGES_DIR / f"{prefix}_SynCity3D_snapshot_{face}_{index}.png"
+            filepath.unlink()
+
+            #print("...and snaphots were removed for memory management")
+
+    except Exception:
+        pass
+
     return #eqr
 
 
@@ -104,8 +131,8 @@ def convertFromCE(index, prefix="m-Normal", tilt = 0):
 def clean_masks(spheric_photo_index):
 
 
-    mask_1_path = SPHERIC_PHOTO_DIR / f"m-1_SynCity3D_{spheric_photo_index}.png"
-    mask_2_path = SPHERIC_PHOTO_DIR / f"m-2_SynCity3D_{spheric_photo_index}.png"
+    mask_1_path = SPHERIC_PHOTOS_DIR / f"m-1_SynCity3D_{spheric_photo_index}.png"
+    mask_2_path = SPHERIC_PHOTOS_DIR / f"m-2_SynCity3D_{spheric_photo_index}.png"
 
     if not mask_1_path.exists() or not mask_2_path.exists():
         print("some issue occured, it doesn't matter either way")
@@ -138,7 +165,7 @@ def clean_masks(spheric_photo_index):
 
 
 def convert_every_available_file():
-    # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have been normalized (split==5)
+    # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have been normalized (with continoues photo_id and split==5)
     # have to be initialized inside a function, so it updates os.listdir() after taking photos
     all_images = [path for path in os.listdir(IMAGES_DIR) if len(path.split("_")) == 5]
     #print("OS CONVERT:", os.getcwd())
@@ -161,8 +188,8 @@ def convert_every_available_file():
 
 # separated because there were some issus if they were run immediately after creating
 def clean_every_spheric_file():
-    # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have been normalized
-    #have to be initialized inside a function, so it updates os.listdir() after taking photos
+    # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have been normalized (with continoues photo_id)
+    # it has to be initialized inside a function, so it updates os.listdir() after taking photos
     all_images = [path for path in os.listdir(IMAGES_DIR) if len(path.split("_")) == 5]
 
     #print("OS CLEAN:", os.getcwd())

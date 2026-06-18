@@ -28,9 +28,17 @@ ce = CE()
 
 CITY_NAME = "SynCity3D"
 
-WORKSPACE_DIR = Path(r"C:\Users\WA\Desktop\badanie") # !!
-BASE_DIR = WORKSPACE_DIR / "syncity3D" # !!
+WORKSPACE_DIR = Path(r"C:\Users\WA\Desktop\badanie") # !! directory with our project and other projects (ESRI.lib)
+BASE_DIR = WORKSPACE_DIR / "syncity3D" 
 SCRIPTS_DIR = BASE_DIR / "scripts"
+
+# stage 1 - snapshots back, right, front, left, top, bottom 
+CE_SNAPSHOTS_DIR = BASE_DIR / "images"
+# stage 2 - spheric 'photos' and their segmention/semantic color masks
+SPHERIC_PHOTOS_DIR = BASE_DIR / "dataset_stages" / "spheric_photos_and_masks"
+# final stage - COCO format ready dataset /images /annotations
+COCO_DATASET_DIR = BASE_DIR / "COCO_DATASETS" / "D4" # D4!!!!!1
+
 
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
@@ -38,17 +46,21 @@ if str(SCRIPTS_DIR) not in sys.path:
 REQUIRED_ESRI_LIBS = ["ESRI.lib", "ce.lib"]
 
 
-# NOTE: currently we want to eliminate the possible influencing factors, so we stick with ONE Level of Detail
+# NOTE: we want to eliminate the possible influencing factors, so we stick with ONE Level of Detail, but cityengine makes it easy to produce buildings in multiple LODs
 LODS = ["LOD3"]
 #LODS = ["LOD1", "LOD2", "LOD3"]
 
 
+# No use currently
 # ["Building", "Windows", <"Door">, <"Roof">] 
-# We exclude DOOR for current tests, we also exclude ROOF, which moreover is not parametrized, but it could find a use itf
+# We exclude DOOR for current tests, we also exclude ROOF, which moreover is not parametrized but its there
 COMPOSITIONAL_ELEMENTS = ["Building", "Windows"]
-PANORAMA_MAPS = ["DawnSky", "BlueSky", "SunnySky", "CloudySky", "DuskSky", "NightSky"]
-# METHODS = [1, 2, 3] - 3rd is wrong
+
+# METHOD is a Parameter in CGA script
 METHODS = [1, 2]
+
+
+PANORAMA_MAPS = ["DawnSky", "BlueSky", "SunnySky", "CloudySky", "DuskSky", "NightSky"]
 
 # NOTE: No use currently
 # (ELEVATION, AZIMUTH, POSSIBLE_MAPS)
@@ -118,14 +130,19 @@ if __name__ == '__main__':
     print("="*10 + "START" + "="*10)
 
 
+    n_of_parameters = 10
 
     SEED = 111
-    n_of_parameters = 10
     rng = np.random.default_rng(SEED)
     parameter_range = np.arange(0.5, 2.55, step=0.01)
     parameters = rng.choice(parameter_range, n_of_parameters)
+
     parameters_list = [round(param, 2) for param in parameters.tolist()]
     parameters_list.sort()
+
+
+    # evenly distributed
+    parameters_list = [round(param, 2) for param in np.linspace(0.5, 2.5, n_of_parameters).tolist()]
     
     city_parameters = {
         "seed": SEED,
@@ -133,7 +150,10 @@ if __name__ == '__main__':
         "parameters": parameters_list
     }
 
-    city_parameters_path = BASE_DIR / "dataset" / "city_parameters.json"
+
+    city_parameters_path = CE_SNAPSHOTS_DIR / "city_parameters.json"
+    city_parameters_path.touch()
+
     with open(city_parameters_path, mode="w") as file:
         json.dump(city_parameters, file, indent=2)
 
@@ -189,7 +209,7 @@ if __name__ == '__main__':
         print("Creating City" + "="*5)
         create_random_city(city_name, level_of_detail=lod)
         set_rule_attribute_value("PARAMETERS_LIST", parameters_list)    #couldn't replace this list in previous (create_random_city) func, but this one works
-        
+        #set_rule_attribute_value("DATASET_METHOD", "2") 
 
         ce.setSelection(None) 
         showPanorama()
@@ -217,6 +237,7 @@ if __name__ == '__main__':
 
     print("Finished taking photos")
 
+    photoshoot_time = time.time()
     
     time.sleep(5)   # just in case
     # MODULE: BD_normalize_filenames
@@ -237,7 +258,7 @@ if __name__ == '__main__':
 
     # NOTE: creating annotations is NOT included
     finish_time = time.time()
-    print("="*10 + "DONE" + "="*10)
+    print("="*10 + " DONE " + "="*10)
 
 
     #city_parameters = {
@@ -247,31 +268,37 @@ if __name__ == '__main__':
     #}
 
     city_parameters["creation_time"] = round(finish_time - start_time, 2)
+    city_parameters["photoshoot_time"] = round(photoshoot_time - start_time, 2)
     
     
-    IMAGES_DIR =  Path("images")
-    DATASET_DIR = Path("dataset")
+    #IMAGES_DIR =  Path("images")
+    #DATASET_DIR = Path("dataset")
 
-    normal_images = [path for path in os.listdir(IMAGES_DIR) if ("m-Normal" in path)]
-    m1_images = [path for path in os.listdir(IMAGES_DIR) if ("m-1" in path)]
-    m2_images = [path for path in os.listdir(IMAGES_DIR) if ("m-2" in path)]
+    # already removed
+    #normal_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-Normal" in path)]
+    #m1_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-1" in path)]
+    #m2_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-2" in path)]
 
-    spheric_normal_images = [path for path in os.listdir(DATASET_DIR) if ("m-Normal" in path)]
-    spheric_m1_images = [path for path in os.listdir(DATASET_DIR) if ("m-1" in path)]
-    spheric_m2_images = [path for path in os.listdir(DATASET_DIR) if ("m-2" in path)]
+    spheric_normal_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-Normal" in path)]
+    spheric_m1_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-1" in path)]
+    spheric_m2_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-2" in path)]
 
-    city_parameters["total_n_of_photos"] = len(normal_images) + len(m1_images) + len(m2_images)
-    city_parameters["n_normal_of_photos"] = len(normal_images) 
-    city_parameters["n_m1_of_photos"] = len(m1_images) 
-    city_parameters["n_m2_of_photos"] = len(m2_images) 
+    # already removed
+    #city_parameters["total_n_of_photos"] = len(normal_images) + len(m1_images) + len(m2_images)
+    #city_parameters["n_normal_of_photos"] = len(normal_images) 
+    #city_parameters["n_m1_of_photos"] = len(m1_images) 
+    #city_parameters["n_m2_of_photos"] = len(m2_images) 
+
     city_parameters["total_n_of_spheric_photos"] = len(spheric_normal_images) + len(spheric_m1_images) + len(spheric_m2_images)
     city_parameters["n_spheric_normal_of_photos"] = len(spheric_normal_images) 
     city_parameters["n_spheric_m1_of_photos"] = len(spheric_m1_images) 
     city_parameters["n_spheric_m2_of_photos"] = len(spheric_m2_images) 
 
     
-    # Coco dataset path
-    city_parameters_path = BASE_DIR / "DATASETS" / "D3" / "city_parameters.json"
+    # Coco dataset path - different location than previous just parameters on creation time stats
+    city_parameters_path = COCO_DATASET_DIR / "city_parameters.json"
+    city_parameters_path.touch()
+
     with open(city_parameters_path, mode="w") as file:
         json.dump(city_parameters, file, indent=2)
     
