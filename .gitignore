@@ -18,8 +18,13 @@ scripts/__pycache__/*
 /dataset_dimmed/*
 /dataset_coco/*
 /COCO_DATASETS/*
+!COCO_DATASETS/.placeholder
 /spheric_photos_and_masks/*
 /rules/oldies/*
 /rules/test*
 .vscode
 /dataset_stages/spheric_photos_and_masks/*.png
+# we use detectron2 library in the project, but we don't want to include it in the repo, so we ignore it here
+/study/detectron2/*     
+!study/detectron2/.placeholder
+study/results/*
