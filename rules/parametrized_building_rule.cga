@@ -25,6 +25,7 @@ roundToXPlaces(n, x) = rint(n * pow(10, x)) / pow(10, x)
 @Group("Building Design", 1)
 
 # written in UPPER mode to distinguish the most important attributes of the rule
+@Hidden
 @Range(min=0.5, max=2.5, step=0.01) @Hidden
 attr RATIO_PARAMETER = roundTo2(rand(0.5, 2.5))
 
@@ -37,6 +38,9 @@ attr RATIO_PARAMETER2 =
 	else:	#if height is related to scope, this option generater very tall buildings in general
 		roundTo2(rand(1.25,2.5))
 
+# ACTUAL RATIO USED IN PROCEDURES
+attr RATIO_PARAMETER3 = get_element_list(PARAMETERS_LIST)
+
 
 @Hidden @Description("whether building should have equal facade figures")
 attr dataset_methods = ["1", "2"]
@@ -44,20 +48,17 @@ attr dataset_methods = ["1", "2"]
 attr DATASET_METHOD = "1"
 
 
-# ACTUAL RATIO USED IN PROCEDURES
-attr RATIO_PARAMETER3 = get_element_list(PARAMETERS_LIST)
+
 
 # replaced on creation
 attr PARAMETERS_LIST = [0.5, 0.8, 1.0, 1.5, 2., 2.5]
-@Hidden
-attr PARAMETERS_LIST2 = PARAMETERS_LIST
+
 
 get_element_list(my_list) = 
 	case size(my_list) == 1:
 		my_list[0]
 	else:
 		my_list[rint(rand(0, size(my_list)-0.5))]
-
 
 
 
@@ -428,7 +429,7 @@ getHex(value, hexs) with (
 		else:
 			getHex(value-total_part*16, [hexs, rint(total_part)])
 
-# substring is necessary, because of floating bite
+# substring is necessary, because of a floating bite
 getHexStr(hexs) = 
 	substring(getHexLetter(hexs[0]) + getHexLetter(hexs[1]), 0, 2)
 	#getHexHelper(hexs, "#")
@@ -615,14 +616,11 @@ WhiteFrame_M2 -->
 	
 ColorDisplayFacade with (
 	facade_ratio := roundTo2(scope.sx / scope.sy)
-	facade_ratio_color := get_ratio_color(facade_ratio)) -->
-	case METHOD == 1:
-		#print("-----")
-		#print("FACADE RATIO:" + facade_ratio)
-		#print("FACADE RATIO COLOR:" + facade_ratio_color)
-		#print("SX:" + scope.sx)
-		#print("SY:" + scope.sy)
-		
+	facade_ratio_color := get_ratio_color(facade_ratio) 
+	#facade_ratio_color := get_ratio_color					# color independent of current facade ratio, facade ratio bounded with fixed RATIO_PARAMETER3 parameter (too many ratios and ratio_lists...)
+	) -->
+	
+	case METHOD == 1:		
 		set(material.opacity, 1)
 		color(facade_ratio_color)
 	else:
@@ -800,7 +798,7 @@ ProjectTextureDoors -->
 		case CONSTRUCTION_DISPLAY:
 			#color(Green_Color)
 			
-			# ABANDONED
+			# ABANDONED - look for door ratio
 			#case METHOD == 3:
 				#color(RATIO_COLOR)
 				#X
@@ -1028,9 +1026,9 @@ ColorWindow -->
 
 
 getWindowColorBlue =
-	5%:  "#D0E0F0"   // 5% - bardzo jasny
-	5%:  "#B8D4EA"   // 5% - 
-	5%: "#A8C8E8"   // 5% - 
+	5%:  "#D0E0F0"   // 5%
+	5%:  "#B8D4EA"   // 5%
+	5%: "#A8C8E8"   // 5%
 	10%: "#90B8D8"   // 10%
 	15%: "#80A8D0"   // 15%
 	15%: "#7098C8"   // 15%

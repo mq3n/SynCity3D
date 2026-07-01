@@ -13,7 +13,7 @@ import datetime
 ce = CE()
 
 PHOTO_FILES_PATH = "photos"
-
+import time
 
     
 def take_a_snapshot(view, add_info=""):
@@ -85,10 +85,53 @@ def snapshot_selected():
     take_a_snapshot(view)
 
 
+def snapshot_with_changing_params(attribute, parameter_values):
+    rule_attribute = "/ce/rule/" + attribute
+    
+    selected_buildings = get_objects_from_selection()
+    
+    set_rule_attribute_value_to_selected_objects(selected_buildings, "CONSTRUCTION_DISPLAY", False)
+    snapshot()
+    set_rule_attribute_value_to_selected_objects(selected_buildings, "CONSTRUCTION_DISPLAY", True)
+    
+    for value in parameter_values:
+        #for building in selected_buildings:
+            #ce.setAttributeSource(building, rule_attribute, "USER")
+            #ce.setAttribute(building, rule_attribute, value)
+        print("value:", value)  
+        set_rule_attribute_value_to_selected_objects(selected_buildings, attribute, value)
+        #ce.waitForUIIdle()
+        time.sleep(3)
+        print("XX")
+        snapshot()
+    
+    print("DONE")
+
+def tilt_test():
+    ce.get3DViews()[0].setCameraRotation(0,0,0)
+    time.sleep(3)
+    ce.get3DViews()[0].setCameraRotation(15,0,0)
+    time.sleep(3)
+    ce.get3DViews()[0].setCameraRotation(0,20,0)
+    time.sleep(3)
+    ce.get3DViews()[0].setCameraRotation(0,-20,0)
+    time.sleep(3)
+    ce.get3DViews()[0].setCameraRotation(10,-20,0)
+    time.sleep(3)
+    ce.get3DViews()[0].setCameraRotation(0,0,0)
+    time.sleep(3)
+    
+    
+    print("DONE")
+
 
 if __name__ == '__main__':
     
     #selected = get_objects_from_selection()
     #set_rule_attribute_value_to_selected_objects(selected, "DATASET_METHOD", "1")
     #snapshot_selected()
-    snapshot()
+    #snapshot()
+    #snapshot_with_changing_params("METHOD", [1, 2])
+    tilt_test()
+    
+    

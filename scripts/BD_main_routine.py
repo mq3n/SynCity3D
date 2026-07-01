@@ -186,7 +186,7 @@ if __name__ == '__main__':
     #scene_reset()
 
     # if we would like to have more data, 1 city ~ 200 photos
-    n_of_cities = 5
+    n_of_cities = 1
 
     #for lod in LODS[:]:
 
@@ -201,14 +201,14 @@ if __name__ == '__main__':
 
 
         # fresh start
-        print("Clearing City" + "="*5)
-        scene_reset()
+        # print("Clearing City" + "="*5)
+        # scene_reset()
 
-        print("PARAMETERS LIST:", parameters_list)
-        # MODULE: generate_city/network.py
-        print("Creating City" + "="*5)
-        create_random_city(city_name, level_of_detail=lod)
-        set_rule_attribute_value("PARAMETERS_LIST", parameters_list)    #couldn't replace this list in previous (create_random_city) func, but this one works
+        # print("PARAMETERS LIST:", parameters_list)
+        # # MODULE: generate_city/network.py
+        # print("Creating City" + "="*5)
+        # create_random_city(city_name, level_of_detail=lod)
+        # set_rule_attribute_value("PARAMETERS_LIST", parameters_list)    #couldn't replace this list in previous (create_random_city) func, but this one works
         #set_rule_attribute_value("DATASET_METHOD", "2") 
 
         ce.setSelection(None) 
@@ -218,13 +218,18 @@ if __name__ == '__main__':
         print("Taking photos" + "="*5)
         # PHOTO TYPE: NORMAL
         # MODULE: generate_city/snapshot.py
+        
+        #SEED_2 = 0
+        #rng = np.random.default_rng(SEED_2)
         create_photo_set(cameraStep = 10, cameraHeight=5, prefix=city_name, space_type="Normal", city_number=i)
 
         hidePanorama()
         create_mask(True, city_name)
         
+        
         #for element in COMPOSITIONAL_ELEMENTS[:]:
         for method in METHODS[:]:
+            
             #set_rule_attribute_value("CHOSEN_ELEMENT", element)
             set_rule_attribute_value("METHOD", method)
 
@@ -251,56 +256,56 @@ if __name__ == '__main__':
     convert_every_available_file()
 
     
-    #time.sleep(5)  # just in case
+    # time.sleep(5)  # just in case
     # turned out to be unnecessary, so we skip it
-    #print("Removing artefacts" + "="*5)
-    #clean_every_spheric_file()
+    # print("Removing artefacts" + "="*5)
+    # clean_every_spheric_file()
 
-    # NOTE: creating annotations is NOT included
-    finish_time = time.time()
-    print("="*10 + " DONE " + "="*10)
+    # # NOTE: creating annotations is NOT included
+    # finish_time = time.time()
+    # print("="*10 + " DONE " + "="*10)
 
 
-    #city_parameters = {
-    #    "seed": SEED,
-    #    "parameter_range": [0.5, 2.55],
-    #    "parameters:": parameters_list
-    #}
+    # city_parameters = {
+    #     "seed": SEED,
+    #     "parameter_range": [0.5, 2.55],
+    #     "parameters:": parameters_list
+    # }
 
-    city_parameters["creation_time"] = round(finish_time - start_time, 2)
-    city_parameters["photoshoot_time"] = round(photoshoot_time - start_time, 2)
+    # city_parameters["creation_time"] = round(finish_time - start_time, 2)
+    # city_parameters["photoshoot_time"] = round(photoshoot_time - start_time, 2)
     
     
-    #IMAGES_DIR =  Path("images")
-    #DATASET_DIR = Path("dataset")
+    # #IMAGES_DIR =  Path("images")
+    # #DATASET_DIR = Path("dataset")
 
-    # already removed
-    #normal_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-Normal" in path)]
-    #m1_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-1" in path)]
-    #m2_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-2" in path)]
+    # # already removed
+    # #normal_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-Normal" in path)]
+    # #m1_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-1" in path)]
+    # #m2_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-2" in path)]
 
-    spheric_normal_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-Normal" in path)]
-    spheric_m1_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-1" in path)]
-    spheric_m2_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-2" in path)]
+    # spheric_normal_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-Normal" in path)]
+    # spheric_m1_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-1" in path)]
+    # spheric_m2_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-2" in path)]
 
-    # already removed
-    #city_parameters["total_n_of_photos"] = len(normal_images) + len(m1_images) + len(m2_images)
-    #city_parameters["n_normal_of_photos"] = len(normal_images) 
-    #city_parameters["n_m1_of_photos"] = len(m1_images) 
-    #city_parameters["n_m2_of_photos"] = len(m2_images) 
+    # # already removed
+    # #city_parameters["total_n_of_photos"] = len(normal_images) + len(m1_images) + len(m2_images)
+    # #city_parameters["n_normal_of_photos"] = len(normal_images) 
+    # #city_parameters["n_m1_of_photos"] = len(m1_images) 
+    # #city_parameters["n_m2_of_photos"] = len(m2_images) 
 
-    city_parameters["total_n_of_spheric_photos"] = len(spheric_normal_images) + len(spheric_m1_images) + len(spheric_m2_images)
-    city_parameters["n_spheric_normal_of_photos"] = len(spheric_normal_images) 
-    city_parameters["n_spheric_m1_of_photos"] = len(spheric_m1_images) 
-    city_parameters["n_spheric_m2_of_photos"] = len(spheric_m2_images) 
+    # city_parameters["total_n_of_spheric_photos"] = len(spheric_normal_images) + len(spheric_m1_images) + len(spheric_m2_images)
+    # city_parameters["n_spheric_normal_of_photos"] = len(spheric_normal_images) 
+    # city_parameters["n_spheric_m1_of_photos"] = len(spheric_m1_images) 
+    # city_parameters["n_spheric_m2_of_photos"] = len(spheric_m2_images) 
 
     
-    # Coco dataset path - different location than previous just parameters on creation time stats
-    city_parameters_path = COCO_DATASET_DIR / "city_parameters.json"
-    city_parameters_path.touch()
+    # # Coco dataset path - different location than previous just parameters on creation time stats
+    # city_parameters_path = COCO_DATASET_DIR / "city_parameters.json"
+    # city_parameters_path.touch()
 
-    with open(city_parameters_path, mode="w") as file:
-        json.dump(city_parameters, file, indent=2)
+    # with open(city_parameters_path, mode="w") as file:
+    #     json.dump(city_parameters, file, indent=2)
     
     
     print("DONE")

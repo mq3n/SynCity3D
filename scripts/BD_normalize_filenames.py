@@ -16,10 +16,18 @@ SCRIPTS_DIR = BASE_DIR / "scripts"
 # stage 1 - snapshots back, right, front, left, top, bottom 
 CE_SNAPSHOTS_DIR = BASE_DIR / "images"
 
+SNAPSHOT_DIR = Path(r"C:\Users\WA\Desktop\badanie\syncity3D\dataset_stages")
+SIDES_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_sides"
+SVI_IMAGE_DIR = SNAPSHOT_DIR / "snaphot_svi"
+
+
+# MOUNT_DIR = Path(r"C:\Users\WA\Desktop\photo_size_test_mount")
+# SIDES_IMAGE_DIR = MOUNT_DIR / "images_sides"
+# SVI_IMAGE_DIR = MOUNT_DIR / "1024x2048_svi"
 
 
 print(os.getcwd())
-IMAGES_DIR =  CE_SNAPSHOTS_DIR #Path("images")
+IMAGES_DIR = SIDES_IMAGE_DIR #CE_SNAPSHOTS_DIR #Path("images")
 #ALL_IMAGES = [path for path in os.listdir(IMAGES_DIR) if re.search(".*\.png", path) and len(path.split("_")) == 6]
 COUNTER_MAP_COUNT = {}
 COUNTER_MAP_ADD = {}

@@ -28,3 +28,4 @@ scripts/__pycache__/*
 /study/detectron2/*     
 !study/detectron2/.placeholder
 study/results/*
+/dataset_stages/*

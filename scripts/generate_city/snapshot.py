@@ -10,6 +10,21 @@ from .environment import *
 
 ce = CE()
 import time
+from pathlib import Path
+import random
+import shutil
+import os
+import numpy as np
+
+# it lasts forever...
+# MOUNT_DIR = Path(r"C:\Users\WA\Desktop\photo_size_test_mount")
+# SIDES_IMAGE_DIR = MOUNT_DIR / "images_sides"
+# SVI_IMAGE_DIR = MOUNT_DIR / "1920x1080_svi"
+
+
+SNAPSHOT_DIR = Path(r"C:\Users\WA\Desktop\badanie\syncity3D\dataset_stages")
+SIDES_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_sides"
+SVI_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_svi"
 
 
 class sides:
@@ -22,7 +37,7 @@ class sides:
     back = [0, 180, 0, "back"]
 
 
-def create_90_FOV(side, cnt, prefix, tilt):
+def create_90_FOV(side, cnt, prefix):
     global viewport, sides, ce
     
     #pos = ce.get3DViews()[0].getCameraPosition()    #!
@@ -33,11 +48,55 @@ def create_90_FOV(side, cnt, prefix, tilt):
     viewport.setCameraAngleOfView(90) #!
     ce.waitForUIIdle()
 
-    filename = f"/{prefix}_snapshot_{side[3]}_{cnt}.png"
+    filename = f"{prefix}_snapshot_{side[3]}_{cnt}.png"
     #filename = f"/{prefix}_snapshot_{side[3]}_{tilt}_{cnt}.png"
     #filename = "/" + prefix + "_snapshot_%s_%s_%s.png" % (side[3], tilt, cnt)
-    viewport.snapshot(ce.toFSPath("images") + filename, 1920, 1920)
-    print("saved:" + prefix + "_" + side[3] + "_" +str(cnt))
+    #viewport.snapshot(ce.toFSPath("images") + filename, 1920, 1920)
+    local_file_path = os.path.join(ce.toFSPath("images"), filename)
+    file_path = SIDES_IMAGE_DIR / filename
+
+    viewport.snapshot(str(file_path), 1920, 1920)
+
+    # credentials...
+    # try:
+    #     shutil.move(str(local_file_path), str(rclone_file_path))
+    # except Exception as e:
+    #     print(f"Error rclone: {e}")
+
+    #viewport.snapshot(str(SIDES_IMAGE_DIR / filename), 1920, 1920)
+    print("SIDE saved:" + prefix + "_" + side[3] + "_" +str(cnt))
+
+
+def create_90_FOV_svi(rng, cnt, prefix):
+    viewport.setPoIDistance(50)
+    
+    vertical_tilt = int(rng.integers(0, 20))
+    horizontal_tilt = int(rng.integers(-30, 30))
+    angle_of_view = int(rng.choice([90, 121, 54])) # values taken from cityengine corresponding to 18mm, 10mm fisheye and 50mm lens
+    #viewport.setCameraAngleOfView(90) #!
+    viewport.setCameraAngleOfView(angle_of_view)
+    viewport.setCameraRotation(vertical_tilt, horizontal_tilt, 0)
+
+    filename = f"{prefix}_snapshot_{angle_of_view}_{cnt}.png"
+
+    #local_file_path = os.path.join(ce.toFSPath("images"), filename)
+    file_path = SVI_IMAGE_DIR / filename
+
+    viewport.snapshot(str(file_path), 1920, 1080)
+
+    # credentials...
+    # try:
+    #     shutil.move(str(local_file_path), str(rclone_file_path))
+    # except Exception as e:
+    #     print(f"Error rclone: {e}")
+
+
+    #viewport.snapshot(str(SVI_IMAGE_DIR / filename), 1024, 2048)
+    print("SVI saved:" + prefix + "_" +str(cnt))
+
+    ce.waitForUIIdle()
+    return
+
 
 
 def make_tmp_snapshot(filename):
@@ -71,6 +130,9 @@ def create_photo_set(main_road="main_road", prefix="x", space_type="Normal", cit
     global viewport, ce
     print("taking a photo set:", prefix, ", ", space_type, ", ", city_number)
 
+    # for svi !!!
+    rng=np.random.default_rng(0)
+    
     #ce = CE()
     viewport = {}
 
@@ -102,17 +164,19 @@ def create_photo_set(main_road="main_road", prefix="x", space_type="Normal", cit
             # time.sleep(2)
             
             # test
-            #if counter == 5:
-            #    break
+            if counter == 100:
+                break
             
             counter += 1
-            for sideName in sides.sides:
-                #print("PHOTO SIDE:" + sideName)
+            # for sideName in sides.sides:
+            #     #print("PHOTO SIDE:" + sideName)
             
-                # sky config is important as it 'resets' the counter for LOD x Space
-                # prefix for photos is: <city: e.g. SynCity3D_<space: Normal/Building/Door/Windows_<city_number: 0, 1, etc.>>
-                create_90_FOV(getattr(sides, sideName), counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number), tilt)
-            
+            #     # sky config is important as it 'resets' the counter for LOD x Space
+            #     # prefix for photos is: <city: e.g. SynCity3D_<space: Normal/Building/Door/Windows_<city_number: 0, 1, etc.>>
+            #     create_90_FOV(getattr(sides, sideName), counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number))
+        
+            create_90_FOV_svi(rng, counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number))
+
         print("generowanie zdjec zakonczone")
 
 

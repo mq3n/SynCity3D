@@ -25,8 +25,22 @@ CE_SNAPSHOTS_DIR = BASE_DIR / "images"
 # HERE - stage 2 - spheric 'photos' and their segmention/semantic color masks
 SPHERIC_PHOTOS_DIR = BASE_DIR / "dataset_stages" / "spheric_photos_and_masks"
 
+# NEW
+# MOUNT_DIR = Path(r"C:\Users\WA\Desktop\photo_size_test_mount")
+# SIDES_IMAGE_DIR = MOUNT_DIR / "images_sides"
+# SVI_IMAGE_DIR = MOUNT_DIR / "1024x2048_svi"
 
-IMAGES_DIR = CE_SNAPSHOTS_DIR
+SNAPSHOT_DIR = Path(r"C:\Users\WA\Desktop\badanie\syncity3D\dataset_stages")
+SIDES_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_sides"
+SVI_IMAGE_DIR = SNAPSHOT_DIR / "snaphot_svi"
+
+
+
+SPHERIC_PHOTORS_DIR_HR =  SNAPSHOT_DIR / "3040x6080_spheric"
+SPHERIC_PHOTORS_DIR_LR =  SNAPSHOT_DIR / "1024x2048_spheric"
+
+
+IMAGES_DIR = SIDES_IMAGE_DIR #CE_SNAPSHOTS_DIR
 
 SPACES = ["m-Normal", "m-1", "m-2"]
 SIDES = ['back','right','front','left','top','bottom']
@@ -101,19 +115,24 @@ def convertFromCE(index, prefix="m-Normal", tilt = 0):
 
     # Valid options: "nearest", "linear", "bilinear", "biquadratic", "quadratic", "quad", "bicubic", "cubic", "biquartic", "quartic", "biquintic", "quintic".
     #e = py360convert.c2e(image,3040,6080,cube_format='horizon')
-    e = py360convert.c2e(cubmap_dict, 3040, 6080, cube_format='dict', mode="biquadratic")
-    eqr = Image.fromarray(e.astype('uint8'))
-    save_path = SPHERIC_PHOTOS_DIR / f"{prefix}_SynCity3D_{index}.png"
+    e_hr = py360convert.c2e(cubmap_dict, 3040, 6080, cube_format='dict', mode="biquadratic")
+    e_lr = py360convert.c2e(cubmap_dict, 1024, 2048, cube_format='dict', mode="biquadratic")
+    eqr_hr = Image.fromarray(e_hr.astype('uint8'))
+    eqr_lr = Image.fromarray(e_lr.astype('uint8'))
+
+    save_path_hr = SPHERIC_PHOTORS_DIR_HR / f"{prefix}_SynCity3D_{index}.png"
+    save_path_lr = SPHERIC_PHOTORS_DIR_LR / f"{prefix}_SynCity3D_{index}.png"
     #print("SAVE PATH:", save_path)
     try:
-        eqr.save(save_path)
-        print("saved:", save_path)
-
-        
-
+        eqr_hr.save(save_path_hr)
+        print("saved:", save_path_hr)
+        eqr_lr.save(save_path_lr)
+        print("saved:", save_path_lr)
     except Exception:
+        print("exception...")
         pass
     #eqr.save('./output/%s_%s_%s.png' % (prefix,index,tilt))
+    
     try:
         for face, _ in faces2:
             filepath = IMAGES_DIR / f"{prefix}_SynCity3D_snapshot_{face}_{index}.png"
@@ -123,6 +142,7 @@ def convertFromCE(index, prefix="m-Normal", tilt = 0):
 
     except Exception:
         pass
+
 
     return #eqr
 
