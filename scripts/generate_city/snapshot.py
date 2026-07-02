@@ -72,7 +72,7 @@ def create_90_FOV_svi(rng, cnt, prefix):
     
     vertical_tilt = int(rng.integers(0, 20))
     horizontal_tilt = int(rng.integers(-30, 30))
-    angle_of_view = int(rng.choice([90, 121, 54])) # values taken from cityengine corresponding to 18mm, 10mm fisheye and 50mm lens
+    angle_of_view = int(rng.choice([90, 121, 54])) # values taken from cityengine corresponding to 18mm, 10mm fisheye and 35mm lens
     #viewport.setCameraAngleOfView(90) #!
     viewport.setCameraAngleOfView(angle_of_view)
     viewport.setCameraRotation(vertical_tilt, horizontal_tilt, 0)
@@ -164,16 +164,16 @@ def create_photo_set(main_road="main_road", prefix="x", space_type="Normal", cit
             # time.sleep(2)
             
             # test
-            if counter == 100:
-                break
+            # if counter == 100:
+            #     break
             
             counter += 1
-            # for sideName in sides.sides:
-            #     #print("PHOTO SIDE:" + sideName)
+            for sideName in sides.sides:
+                #print("PHOTO SIDE:" + sideName)
             
-            #     # sky config is important as it 'resets' the counter for LOD x Space
-            #     # prefix for photos is: <city: e.g. SynCity3D_<space: Normal/Building/Door/Windows_<city_number: 0, 1, etc.>>
-            #     create_90_FOV(getattr(sides, sideName), counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number))
+                # sky config is important as it 'resets' the counter for LOD x Space
+                # prefix for photos is: <city: e.g. SynCity3D_<space: Normal/Building/Door/Windows_<city_number: 0, 1, etc.>>
+                create_90_FOV(getattr(sides, sideName), counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number))
         
             create_90_FOV_svi(rng, counter, prefix + "_m-"  + str(space_type) + "_" + str(city_number))
 

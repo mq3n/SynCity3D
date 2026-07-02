@@ -18,7 +18,7 @@ CE_SNAPSHOTS_DIR = BASE_DIR / "images"
 
 SNAPSHOT_DIR = Path(r"C:\Users\WA\Desktop\badanie\syncity3D\dataset_stages")
 SIDES_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_sides"
-SVI_IMAGE_DIR = SNAPSHOT_DIR / "snaphot_svi"
+SVI_IMAGE_DIR = SNAPSHOT_DIR / "snapshot_svi"
 
 
 # MOUNT_DIR = Path(r"C:\Users\WA\Desktop\photo_size_test_mount")
@@ -62,16 +62,23 @@ def get_new_index(current_index: str, n_city: str):
     return str(int(current_index) + int(COUNTER_MAP_ADD[n_city]))
 
 
-def rename_photo(path):
+def rename_photo(images_dir, path, photo_type="spheric"):
     path_split = path.split("_")
     new_path = path_split[1] + "_" + path_split[0] + "_" + path_split[3] + "_" \
             + path_split[4] + "_" + get_new_index(path_split[5][:-4], path_split[2]) + ".png"
     
+    if photo_type == "spheric":
+        new_path = path_split[1] + "_" + path_split[0] + "_" + path_split[3] + "_" \
+            + path_split[4] + "_" + get_new_index(path_split[5][:-4], path_split[2]) + ".png"
+    else:
+        new_path = path_split[1] + "_" + path_split[0]  + "_" \
+            + path_split[4] + "_" + get_new_index(path_split[5][:-4], path_split[2]) + ".png"
+
     #print("OLD:", IMAGES_DIR / path)
     #print("NEW:", IMAGES_DIR / new_path)
 
     try:
-        os.rename(IMAGES_DIR / path, IMAGES_DIR / new_path)
+        os.rename(images_dir / path, images_dir / new_path)
         #print("Ok")
     except FileNotFoundError:
         #print("file not found")
@@ -81,10 +88,10 @@ def rename_photo(path):
         pass
     
 
-def rename_all_new_photos():
+def rename_all_new_spheric_photos():
     # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have NOT been normalized
     # have to be initialized inside a function, so it updates os.listdir() after taking photos
-    all_images = [path for path in os.listdir(IMAGES_DIR) if len(path.split("_")) == 6]
+    all_images = [path for path in os.listdir(SIDES_IMAGE_DIR) if len(path.split("_")) == 6]
     #print("OS RENAME:", os.getcwd())
     #print("IMAGES DIR:", IMAGES_DIR)
     #print(os.listdir(IMAGES_DIR))
@@ -98,10 +105,34 @@ def rename_all_new_photos():
         set_counter_mapping(city_index)
     
         for file in all_images:
-            rename_photo(file)
+            rename_photo(SIDES_IMAGE_DIR, file)
 
     print("renamed all files in ../images")
 
+
+
+
+def rename_all_new_svi_photos():
+    # "images\SynCity3D_m-Normal_snapshot_back_2.png" - we assume filenames have NOT been normalized
+    # have to be initialized inside a function, so it updates os.listdir() after taking photos
+    all_images = [path for path in os.listdir(SVI_IMAGE_DIR) if (len(path.split("_")) == 6 and path.startswith("SynCity3D"))]
+    #print("OS RENAME:", os.getcwd())
+    #print("IMAGES DIR:", IMAGES_DIR)
+    #print(os.listdir(IMAGES_DIR))
+
+
+    #print("ALL IMAGES rename:", len(all_images))
+    if all_images:
+        city_index_svi = [(path.split('_')[2], int(path.split('_')[5][:-4]) ) for path in all_images]
+        #print("CITY INDEX:", city_index) 
+
+        set_counter_mapping(city_index_svi)
+    
+        for file in all_images:
+            rename_photo(SVI_IMAGE_DIR, file, photo_type="svi")
+
+
+    print("renamed all files in ../images")
 
 if __name__ == "__main__":
     #rename_all_new_photos()

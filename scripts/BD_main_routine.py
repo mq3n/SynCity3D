@@ -1,7 +1,7 @@
 '''
 Created on Apr 23, 2026
 
-@author: pawel
+@author: Pawel K
 '''
 import sys
 if sys.platform.startswith('java'):
@@ -37,27 +37,25 @@ CE_SNAPSHOTS_DIR = BASE_DIR / "images"
 # stage 2 - spheric 'photos' and their segmention/semantic color masks
 SPHERIC_PHOTOS_DIR = BASE_DIR / "dataset_stages" / "spheric_photos_and_masks"
 # final stage - COCO format ready dataset /images /annotations
-COCO_DATASET_DIR = BASE_DIR / "COCO_DATASETS" / "D4" # D4!!!!!1
+COCO_DATASET_SPHERIC_DIR = BASE_DIR / "COCO_DATASETS" / "D7_SPHERIC" # D4!!!!!1
+COCO_DATASET_SVI_DIR = BASE_DIR / "COCO_DATASETS" / "D7_SVI"
 
+
+os.makedirs(COCO_DATASET_SPHERIC_DIR, exist_ok=True)
+os.makedirs(COCO_DATASET_SVI_DIR, exist_ok=True)
 
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 REQUIRED_ESRI_LIBS = ["ESRI.lib", "ce.lib"]
 
-
 # NOTE: we want to eliminate the possible influencing factors, so we stick with ONE Level of Detail, but cityengine makes it easy to produce buildings in multiple LODs
 LODS = ["LOD3"]
 #LODS = ["LOD1", "LOD2", "LOD3"]
 
 
-# No use currently
-# ["Building", "Windows", <"Door">, <"Roof">] 
-# We exclude DOOR for current tests, we also exclude ROOF, which moreover is not parametrized but its there
-COMPOSITIONAL_ELEMENTS = ["Building", "Windows"]
-
 # METHOD is a Parameter in CGA script
-METHODS = [1, 2]
+ANNOTATION_METHODS = [1, 2]
 
 
 PANORAMA_MAPS = ["DawnSky", "BlueSky", "SunnySky", "CloudySky", "DuskSky", "NightSky"]
@@ -131,32 +129,8 @@ if __name__ == '__main__':
 
 
     n_of_parameters = 10
-
-    SEED = 111
-    rng = np.random.default_rng(SEED)
-    parameter_range = np.arange(0.5, 2.55, step=0.01)
-    parameters = rng.choice(parameter_range, n_of_parameters)
-
-    parameters_list = [round(param, 2) for param in parameters.tolist()]
-    parameters_list.sort()
-
-
     # evenly distributed
     parameters_list = [round(param, 2) for param in np.linspace(0.5, 2.5, n_of_parameters).tolist()]
-    
-    city_parameters = {
-        "seed": SEED,
-        "parameter_range": [0.5, 2.55],
-        "parameters": parameters_list
-    }
-
-
-    city_parameters_path = CE_SNAPSHOTS_DIR / "city_parameters.json"
-    city_parameters_path.touch()
-
-    with open(city_parameters_path, mode="w") as file:
-        json.dump(city_parameters, file, indent=2)
-
 
     start_time = time.time()
 
@@ -178,15 +152,14 @@ if __name__ == '__main__':
     #create_mask(True, CITY_NAME)
     #set_rule_attribute_value("METHOD", 1)
 
-
-    scene_sky = scene["sky"]
+    #scene_sky = scene["sky"]
     #print("Scene sky:", scene_sky)
 
     #print("Clearing City")
     #scene_reset()
 
     # if we would like to have more data, 1 city ~ 200 photos
-    n_of_cities = 1
+    n_of_cities = 5
 
     #for lod in LODS[:]:
 
@@ -201,15 +174,14 @@ if __name__ == '__main__':
 
 
         # fresh start
-        # print("Clearing City" + "="*5)
-        # scene_reset()
+        print("Clearing City" + "="*5)
+        scene_reset()
 
-        # print("PARAMETERS LIST:", parameters_list)
-        # # MODULE: generate_city/network.py
-        # print("Creating City" + "="*5)
-        # create_random_city(city_name, level_of_detail=lod)
-        # set_rule_attribute_value("PARAMETERS_LIST", parameters_list)    #couldn't replace this list in previous (create_random_city) func, but this one works
-        #set_rule_attribute_value("DATASET_METHOD", "2") 
+        print("PARAMETERS LIST:", parameters_list)
+        # MODULE: generate_city/network.py
+        print("Creating City" + "="*5)
+        create_random_city(city_name, level_of_detail=lod)
+        set_rule_attribute_value("PARAMETERS_LIST", parameters_list)    #couldn't replace this list in previous (create_random_city) func, but this one works
 
         ce.setSelection(None) 
         showPanorama()
@@ -219,8 +191,7 @@ if __name__ == '__main__':
         # PHOTO TYPE: NORMAL
         # MODULE: generate_city/snapshot.py
         
-        #SEED_2 = 0
-        #rng = np.random.default_rng(SEED_2)
+
         create_photo_set(cameraStep = 10, cameraHeight=5, prefix=city_name, space_type="Normal", city_number=i)
 
         hidePanorama()
@@ -228,10 +199,10 @@ if __name__ == '__main__':
         
         
         #for element in COMPOSITIONAL_ELEMENTS[:]:
-        for method in METHODS[:]:
+        for method in ANNOTATION_METHODS[:]:
             
             #set_rule_attribute_value("CHOSEN_ELEMENT", element)
-            set_rule_attribute_value("METHOD", method)
+            set_rule_attribute_value("ANNOTATION_METHOD", method)
 
             # PHOTO TYPE: MASK <element>
             create_photo_set(cameraStep = 10, cameraHeight=5, prefix=city_name, space_type=method, city_number=i)
@@ -247,42 +218,45 @@ if __name__ == '__main__':
     time.sleep(5)   # just in case
     # MODULE: BD_normalize_filenames
     print("Normalizing filenames" + "="*5)
-    rename_all_new_photos()
-
+    rename_all_new_spheric_photos()
+    rename_all_new_svi_photos()
    
-    time.sleep(5)   # just in case
+
+    #time.sleep(5)   # just in case
     print("Creating 360photos" + "="*5)
     # MODULE: BD_create_spheric_photos
     convert_every_available_file()
 
     
-    # time.sleep(5)  # just in case
-    # turned out to be unnecessary, so we skip it
-    # print("Removing artefacts" + "="*5)
-    # clean_every_spheric_file()
+    time.sleep(5)  # just in case
+    #turned out to be unnecessary, so we skip it
+    #print("Removing artefacts" + "="*5)
+    clean_every_spheric_file()
+    clean_every_svi_file()
 
-    # # NOTE: creating annotations is NOT included
-    # finish_time = time.time()
-    # print("="*10 + " DONE " + "="*10)
+    # NOTE: creating annotations is NOT included
+    finish_time = time.time()
+    print("="*10 + " DONE " + "="*10)
 
 
-    # city_parameters = {
-    #     "seed": SEED,
-    #     "parameter_range": [0.5, 2.55],
-    #     "parameters:": parameters_list
-    # }
+    city_parameters = {
+        #"seed": SEED,
+        "parameter_range": [0.5, 2.55],
+        "parameters": parameters_list
+    }
 
-    # city_parameters["creation_time"] = round(finish_time - start_time, 2)
-    # city_parameters["photoshoot_time"] = round(photoshoot_time - start_time, 2)
+    city_parameters["creation_time"] = round(finish_time - start_time, 2)
+    city_parameters["photoshoot_time"] = round(photoshoot_time - start_time, 2)
     
     
-    # #IMAGES_DIR =  Path("images")
-    # #DATASET_DIR = Path("dataset")
+    # LATER
+    #IMAGES_DIR =  Path("images")
+    #DATASET_DIR = Path("dataset")
 
-    # # already removed
-    # #normal_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-Normal" in path)]
-    # #m1_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-1" in path)]
-    # #m2_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-2" in path)]
+    # already removed
+    #normal_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-Normal" in path)]
+    #m1_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-1" in path)]
+    #m2_images = [path for path in os.listdir(CE_SNAPSHOTS_DIR) if ("m-2" in path)]
 
     # spheric_normal_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-Normal" in path)]
     # spheric_m1_images = [path for path in os.listdir(SPHERIC_PHOTOS_DIR) if ("m-1" in path)]
@@ -300,13 +274,17 @@ if __name__ == '__main__':
     # city_parameters["n_spheric_m2_of_photos"] = len(spheric_m2_images) 
 
     
-    # # Coco dataset path - different location than previous just parameters on creation time stats
-    # city_parameters_path = COCO_DATASET_DIR / "city_parameters.json"
-    # city_parameters_path.touch()
+    # Coco dataset path - different location than previous just parameters on creation time stats
+    city_parameters_spheric_path = COCO_DATASET_SPHERIC_DIR / "city_parameters.json"
+    city_parameters_spheric_path.touch()
+    city_parameters_svi_path = COCO_DATASET_SVI_DIR / "city_parameters.json"
+    city_parameters_svi_path.touch()
 
-    # with open(city_parameters_path, mode="w") as file:
-    #     json.dump(city_parameters, file, indent=2)
+    with open(city_parameters_spheric_path, mode="w") as file:
+        json.dump(city_parameters, file, indent=2)
     
+    with open(city_parameters_svi_path, mode="w") as file:
+        json.dump(city_parameters, file, indent=2)
     
     print("DONE")
     #print("Building dataset took:", round(finish_time - start_time, 2), "s")
