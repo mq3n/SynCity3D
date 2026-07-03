@@ -164,7 +164,7 @@ def create_photo_set(main_road="main_road", prefix="x", space_type="Normal", cit
             # time.sleep(2)
             
             # test
-            # if counter == 100:
+            # if counter == 10:
             #     break
             
             counter += 1

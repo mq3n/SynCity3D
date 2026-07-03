@@ -37,8 +37,8 @@ CE_SNAPSHOTS_DIR = BASE_DIR / "images"
 # stage 2 - spheric 'photos' and their segmention/semantic color masks
 SPHERIC_PHOTOS_DIR = BASE_DIR / "dataset_stages" / "spheric_photos_and_masks"
 # final stage - COCO format ready dataset /images /annotations
-COCO_DATASET_SPHERIC_DIR = BASE_DIR / "COCO_DATASETS" / "D7_SPHERIC" # D4!!!!!1
-COCO_DATASET_SVI_DIR = BASE_DIR / "COCO_DATASETS" / "D7_SVI"
+COCO_DATASET_SPHERIC_DIR = BASE_DIR / "COCO_DATASETS" / "D8_SPHERIC" # D4!!!!!1
+COCO_DATASET_SVI_DIR = BASE_DIR / "COCO_DATASETS" / "D8_SVI"
 
 
 os.makedirs(COCO_DATASET_SPHERIC_DIR, exist_ok=True)

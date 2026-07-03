@@ -25,66 +25,90 @@ roundToXPlaces(n, x) = rint(n * pow(10, x)) / pow(10, x)
 @Group("Building Design", 1)
 
 # written in UPPER mode to distinguish the most important attributes of the rule
-@Hidden
-@Range(min=0.5, max=2.5, step=0.01) @Hidden
-attr RATIO_PARAMETER = roundTo2(rand(0.5, 2.5))
+#@Hidden
+#@Range(min=0.5, max=2.5, step=0.01) @Hidden
+#attr RATIO_PARAMETER = roundTo2(rand(0.5, 2.5))
 
 # EXPERIMENTING
-@Hidden
-@Range(min=0.5, max=2.5, step=0.01)
-attr RATIO_PARAMETER2 = 
-	60%: 
-		roundTo2(rand(0.5,1.25))
-	else:	#if height is related to scope, this option generater very tall buildings in general
-		roundTo2(rand(1.25,2.5))
+#@Hidden
+#@Range(min=0.5, max=2.5, step=0.01)
+#attr RATIO_PARAMETER2 = 
+#	60%: 
+#		roundTo2(rand(0.5,1.25))
+#	else:	#if height is related to scope, this option generater very tall buildings in general
+#		roundTo2(rand(1.25,2.5))
+
+
+# replaced on creation (not really, but shortly after)
+const PARAMETERS_LIST_AUX = [0.5,0.8, 1.0, 1.5, 2., 2.5] #[0.5, 0.8, 1.0, 1.5, 2., 2.5]
+
+# CRUCIAL 
+attr PARAMETERS_LIST = PARAMETERS_LIST_AUX
 
 # ACTUAL RATIO USED IN PROCEDURES
 attr RATIO_PARAMETER3 = get_element_list(PARAMETERS_LIST)
 
 
 @Hidden @Description("whether building should have equal facade figures")
-attr dataset_methods = ["1", "2"]
-@Enum(valuesAttr=dataset_methods)
-attr DATASET_METHOD = "1"
+attr dataset_methods = ["1", "2"]	#to do: unify strings/int
+@Hidden @Enum(valuesAttr=dataset_methods)
+attr DATASET_METHOD = "2"
 
 
+attr RATIO_PARAMETER4 = get_other_element_from_list(PARAMETERS_LIST, RATIO_PARAMETER3, RATIO_PARAMETER3, 0)
 
 
-# replaced on creation
-attr PARAMETERS_LIST = [0.5, 0.8, 1.0, 1.5, 2., 2.5]
+get_other_element_from_list(my_list, value, current_value) = 
+	case current_value == value: get_other_element_from_list(my_list, value, get_element_list(my_list))
+	else:
+		current_value
+
+@Hidden
+attr increase_random = floor(rand(0, 5))
+# tried to increase randomness... because the (ratio3, ratio4) wasnt very diverse
+get_other_element_from_list(my_list, value, current_value, i) = 
+	case current_value == value: get_other_element_from_list(my_list, value, get_element_list(my_list), i+1)
+	else:
+		case i >= increase_random:
+			current_value
+		else:
+			get_other_element_from_list(my_list, value, get_element_list(my_list), i+1)
 
 
 get_element_list(my_list) = 
 	case size(my_list) == 1:
 		my_list[0]
 	else:
-		my_list[rint(rand(0, size(my_list)-0.5))]
+		my_list[floor(rand(0, size(my_list)))]
+		#my_list[rint(rand(0, size(my_list)-0.5))]
 
-
-
-@Hidden
-attr Compositional_Elements = ["Building", "Windows", "Door", "Roof"]
 attr CONSTRUCTION_DISPLAY = false
-@Enum(valuesAttr=Compositional_Elements) @Hidden
-attr CHOSEN_ELEMENT = "Building"
+
+
+#@Hidden
+#attr Compositional_Elements = ["Building", "Windows", "Door", "Roof"]
+#@Enum(valuesAttr=Compositional_Elements) @Hidden
+#attr CHOSEN_ELEMENT = "Building"
 
 # integer, nr 3 is abandoned
 
 @Range(min=1, max=2, stepsize=1)
 #@Enum(valuesAttr=[1, 2, 3])
-attr METHOD = 1
+attr ANNOTATION_METHOD = 1
 
+
+# !!!!
+attr DOMINANT_PROPORTION = true
 
 @Color
 attr RATIO_COLOR = get_ratio_color
 
 # we look only at RED channel
-#64 in blue channel so the difference in ratio is clear to catch
+
 get_ratio_color = 
 	"#" + getHexStr(getHexValue(RATIO_PARAMETER3*100)) + "0000"	
 	#"#ff0000"
-	
-	#substring(get_hex, 0, 5) +"64"
+
 	
 # we assume ratio wont be higher than 2.55*2 = 5.10
 get_ratio_color(ratio) =
@@ -102,12 +126,15 @@ get_ratio_color(ratio) =
 attr Level_of_Detail = ["LOD1", "LOD2", "LOD3"]
 @Enum(valuesAttr=Level_of_Detail)
 attr LOD = "LOD3"
+
+# 
 @Hidden @Description("regularity of spatial arrangement")
 attr Facade_Layouts = ["regular net", "irregular net"]
+
 @Enum(valuesAttr=Facade_Layouts)
-attr Facade_Layout = 
-	95%: "regular net"
-	else: "irregular net"
+attr Facade_Layout = "regular net"
+	#95%: "regular net"
+	#else: "irregular net"
 
 
 @Hidden
@@ -123,18 +150,11 @@ attr regularity_factor =
 	else:
 		1
 
+
 @Enum(valuesAttr=Roof_Types)
 attr roof_type = 
 	30%: "Flat"
 	else: "Hip"
-
-# abandoned atp
-#attr dense_layout = false
-#attr dense_factor = 
-#	case dense_layout:
-#		1
-#	else:
-#		0
 
 	
 # currently only 2 types
@@ -153,12 +173,14 @@ attr Door_Placement = ["left", "center", "right"]
 # should it be also parametrized and related to <some> value, such as initial scope in some direction? but there may be more than one front facade.. lets leave it this way
 
 
-attr building_height = roundTo2(rand(15, 50))
+@Range(min=15, max=40)
+attr building_height = roundTo2(rand(15, 40))
 
-attr building_height2 = roundTo2(min(scope.sx, scope.sz)/RATIO_PARAMETER)
+#attr building_height2 = roundTo2(min(scope.sx, scope.sz)/RATIO_PARAMETER3)
 
+
+# its pretty important attribute
 attr wall_inset = 0.4
-
 
 # in meters
 @Hidden
@@ -225,6 +247,9 @@ attr tile_height = corrected_tile[1]
 attr initial_window_width = rand(1, 3)
 @Hidden
 attr initial_window_height = initial_window_width / RATIO_PARAMETER3
+
+attr initial_window_height_minor = initial_window_width / RATIO_PARAMETER4
+
 
 
 attr  windowtile_to_window_ratio = rand(1.1, 1.5)
@@ -317,9 +342,12 @@ get_n_splits(n, splits, acc) with (rand_split := rand(0.1, min(0.4, 1-acc))) =
 
 #to leave some wall space, max_window_tile_ration is like 0.7, so it covers 0.7x0.7 of tile space
 # PRESERVE RATIO AND ADJUST TO TILE, current initial_window size is too big for given layout		
-scale_windowtile_for_tile(tile_width_x, tile_height_x) with (
+scale_windowtile_for_tile(tile_width_x, tile_height_x, ratio_type) with (
 		windowtile_width_x := windowtile_to_window_ratio * initial_window_width
-		windowtile_height_x := windowtile_to_window_ratio * initial_window_height
+		#windowtile_height_x := windowtile_to_window_ratio * initial_window_height
+		windowtile_height_x :=
+			case ratio_type == 0: windowtile_to_window_ratio * initial_window_height
+			else: windowtile_to_window_ratio * initial_window_height_minor
 		) =
 	scale_X_to_Y(tile_width_x, tile_height_x, windowtile_width_x, windowtile_height_x)
 	
@@ -481,6 +509,13 @@ LotCorner  -->
 		X
 		#projectUV(5)
 		
+
+Grass2 -->
+	setupProjection(0, scope.xz, 10, 10)
+	texture(get_grass_texture)
+	projectUV(0)
+
+
 		
 Scatter with (n_of_elements := rint(rand(2, 5))) -->
    	offset(-1)
@@ -509,7 +544,8 @@ ScaleDown -->
 
 # Starting rule for inner lot in a network block
 LotInner -->
-	Lot
+	Grass
+	#Lot
 
 
 # law of cosinus
@@ -535,37 +571,29 @@ InsertCylinder with (
 	}
 
 @StartRule
-Lot -->		
-	# to hide scene districts
-	#s('1.0175, '1, '1.0175)
-	#t(0, 0.1, 0)
-	
-	#print("SCOPE SX:" + scope.sx)
-	#print("SCOPE SZ:" + scope.sz)
-	#print("RATIO:" + RATIO_PARAMETER)
-	#print("SUPPOSED HEIGHT: " + min(scope.sz, scope.sx)/RATIO_PARAMETER)
-	#set(building_height2, min(scope.sz, scope.sx)/RATIO_PARAMETER)
-	#extrude(min(scope.sz, scope.sx)/RATIO_PARAMETER)
-	#print(rint(0.5))
-	#print(rint(0.75))
-	#print(rint(1))
-	#print(rint(1.25))
-	#print(rint(2.02))
-	#print(PARAMETERS_LIST[0])
-	#print("---")
-	#print(RATIO_PARAMETER3)
-	#print(get_element_list([0.81, 0.84, 1.24, 1.47, 1.53, 1.84, 1.96, 1.98, 2.07, 2.25]))
-	
-
-	
+Lot -->			
 	#Mass
 	case DATASET_METHOD == "1":
 		InsertCylinder
 		Grass
 	else:
+		print("RATIO PARAMETER 3")
+		print(RATIO_PARAMETER3)
+		print("RATIO PARAMETER 4")
+		print(RATIO_PARAMETER4)
 		extrude(building_height)
+		print("PARAMETER LIST 1")
+		print(PARAMETERS_LIST)
+		print("PARAMETER LIST 2")
+		print(PARAMETERS_LIST_AUX)
+		print(floor(0.3))
+		print(floor(0.9))
+		print(floor(1.2))
+		print(floor(2.))
+		print(floor(9.5))
+		
 		Mass
-		#offset(-0.1)
+		#offset(-0.5)
 		#comp(f){inside: Mass | border: X}
 		
 		
@@ -590,7 +618,7 @@ Mass -->
 Front_X -->
 	case CONSTRUCTION_DISPLAY == true:
 		#case CHOSEN_ELEMENT == "Building":
-		case METHOD == 1:
+		case ANNOTATION_METHOD == 1:
 			WhiteFrame #color(Red_Color)
 		else:
 			Front 
@@ -599,7 +627,7 @@ Front_X -->
 		Front	
 
 WhiteFrame -->
-	offset(-0.25)
+	offset(-0.4)
 	comp(f){
 		inside: ColorDisplayFacade
 		|border: X
@@ -616,11 +644,11 @@ WhiteFrame_M2 -->
 	
 ColorDisplayFacade with (
 	facade_ratio := roundTo2(scope.sx / scope.sy)
-	facade_ratio_color := get_ratio_color(facade_ratio) 
-	#facade_ratio_color := get_ratio_color					# color independent of current facade ratio, facade ratio bounded with fixed RATIO_PARAMETER3 parameter (too many ratios and ratio_lists...)
+	#facade_ratio_color := get_ratio_color(facade_ratio) 
+	facade_ratio_color := get_ratio_color					# color independent of current facade ratio, facade ratio bounded with fixed RATIO_PARAMETER3 parameter (too many ratios and ratio_lists...)
 	) -->
 	
-	case METHOD == 1:		
+	case ANNOTATION_METHOD == 1:		
 		set(material.opacity, 1)
 		color(facade_ratio_color)
 	else:
@@ -629,6 +657,15 @@ ColorDisplayFacade with (
 ColorDisplay -->
 	set(material.opacity, 1)
 	color(get_ratio_color)
+
+ColorDisplay(ratio_type) -->
+	case ratio_type == 0:
+		set(material.opacity, 1)
+		color(get_ratio_color)
+	else:
+		set(material.opacity, 1)
+		color(get_ratio_color(RATIO_PARAMETER4))
+	
 	
 Front with ( 
 	facade_width := scope.sx
@@ -653,7 +690,8 @@ Groundfloor -->
 GroundfloorSplitY with (
 	sy := scope.sy
 	door_height := min(max_door_height, 0.7*sy)
-	door_width := case DATASET_METHOD == "1": door_height*RATIO_PARAMETER3 else: door_height*RATIO_PARAMETER3*rand(0.5, 1)
+	#door_width := case DATASET_METHOD == "1": door_height*RATIO_PARAMETER3 else: door_height*RATIO_PARAMETER3*rand(0.5, 1)
+	door_width := door_height*RATIO_PARAMETER3*rand(0.5, 1)
 	door_placement_x := listRandom(listFromArray(Door_Placement)) )-->
 	case door_placement_x == "center":
 		split(x){~1: GroundfloorSidePart | door_width + 1: DoorsTile(door_height, door_width) | ~1: GroundfloorSidePart}
@@ -991,14 +1029,15 @@ WindowLOD(facade_ratio) -->
 	else:
 		Window(facade_ratio)
 
-Window(facade_ratio) -->
+Window(window_ratio) -->
 	case CONSTRUCTION_DISPLAY:
 		# COLOR INDEPENDENT OF FACADE RATIO
-	 	case METHOD == 2:
-	 		ColorDisplay
+	 	case ANNOTATION_METHOD == 2:
+	 		#ColorDisplay
+	 		ColorDisplay(window_ratio)
 	 		X
 	 	
-	 	case METHOD == 3:
+	 	case ANNOTATION_METHOD == 3:
 	 		#color( get_ratio_color(facade_ratio)) # COLOR DEPENDENT OF FACADE RATIO - abandoned
 	 		color(Blue_Color)
 	 		X
@@ -1061,17 +1100,31 @@ SplitY(x_index, facade_ratio) -->
 	split(y){
 		~tile_height: UpperfloorsTile(x_index, split.index, facade_ratio)
 	}*
-	
 
+	
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# DOMINANT RATIO
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 UpperfloorsTile(x_index, y_index, facade_ratio) with (
-	windowtile_x := scale_windowtile_for_tile(scope.sx, scope.sy)
+	#window_ratio_type:=
+	#	80%: 0 # RATIO_PARAMETER3
+	#	else: 1 # RATIO_PARAMETER4
+	window_ratio_type := 
+		case DOMINANT_PROPORTION == false: 	#!! == true ...
+			0 # RATIO_PARAMETER3
+		else: 
+			80%: 0 # RATIO_PARAMETER3
+			else: 1 # RATIO_PARAMETER4
+				
+	windowtile_x := scale_windowtile_for_tile(scope.sx, scope.sy, window_ratio_type)
+	#windowtile_x := scale_windowtile_for_tile(scope.sx, scope.sy)
 	windowtile_width := windowtile_x[0]
 	windowtile_height := windowtile_x[1]) -->	 
 	split(y){
 		~(1+regularity_factor*rand(0, 2)): UpperfloorsTileWall("bottom", x_index, y_index)
 		|windowtile_height: split(x) {
 			 ~(1+regularity_factor*rand(0,2)): UpperfloorsTileWall("left", x_index, y_index)
-			 | windowtile_width: WindowTile(facade_ratio)
+			 | windowtile_width: WindowTile(window_ratio_type)
 			 |~1: UpperfloorsTileWall("right", x_index, y_index)
 			}
 		|~1: UpperfloorsTileWall("top", x_index, y_index)
@@ -1112,14 +1165,14 @@ UpperfloorsTileWall(side, i, j) -->
 
 
 
-WindowTile(facade_ratio) with (
+WindowTile(window_ratio) with (
 	window_w := scope.sx / windowtile_to_window_ratio
 	window_h := scope.sy / windowtile_to_window_ratio) -->
 	split(x){
 		~1: WindowTileWall
 		| window_w: split(y) {
 			~1: WindowTileWall
-			|window_h: WindowLOD(facade_ratio)
+			|window_h: WindowLOD(window_ratio)
 			|~1: WindowTileWall
 			}
 		| ~1: WindowTileWall
@@ -1293,7 +1346,7 @@ WallMaterial(type) -->
 			inline DiffuseMaterial(2) projectUV(0)
 				
 	else:
-		case METHOD != 0:
+		case ANNOTATION_METHOD != 0:
 			#s('1, '1, wall_inset)
 			#i("builtin:cube:notex")
 			#t(0, 0, -wall_inset)
@@ -1321,14 +1374,17 @@ WallDecor(type) -->
 # ==============================
 # ROOF
 
+attr CHOSEN_ELEMENT = "a"
+
 Roof_X -->
 	case LOD != "LOD1":
-		case CONSTRUCTION_DISPLAY == true:
-		 	case CHOSEN_ELEMENT == "Roof":
-				inline Roof ColorDisplay #color(RATIO_COLOR)
-			else:
-				Roof
-		else:
+		#case CONSTRUCTION_DISPLAY == true:
+		# 	case CHOSEN_ELEMENT == "Roof":
+		#		inline Roof ColorDisplay #color(RATIO_COLOR)
+		#	else:
+		#		Roof
+		#	
+		#else:
 			Roof
 	else:
 		FlatRoof	
@@ -1392,7 +1448,7 @@ RoofTexture -->
 		inline DiffuseMaterialRoof(roof_texture_type)  projectUV(0)
 	else:
 		X
-		# NIL
+		# NIL	# roof stays
 
 @Hidden
 attr rooftype_colors = [rand(0.2,1), rand(0.2,1), rand(0.2,1)] 
