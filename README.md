@@ -1,5 +1,15 @@
 # SynCity3D - CityEngine Project
 
+
+
+
+
+## Project Structure
+
+Project consists of 
+
+
+
 ## Python Environment Setup
 
 This project uses a Conda environment for Python development in VS Code.
@@ -8,8 +18,9 @@ This project uses a Conda environment for Python development in VS Code.
 
 - Anaconda or Miniconda installed
 - Visual Studio Code with Python extension
+- ESRI CityEngine 2025.1+
 
-### Creating the Conda Environment
+### Creating the Conda Environment - Creating Dataset
 
 1. **Create a new conda environment** with Python 3.11:
    ```bash
@@ -65,6 +76,9 @@ conda list
 **Key Dependencies:**
 - cityengine 0.5.1+ce2025111669
 - py4j 0.10.9.9
+
+
+
 
 ### Troubleshooting
 

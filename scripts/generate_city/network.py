@@ -6,7 +6,7 @@ import random
 
 
 def clear_city():
-    pass
+    ce.delete(ce.getObjectsFrom(ce.scene))
 
 
 def _normalize_cfg_name(name):
@@ -101,7 +101,7 @@ def getStreetConfigurationByName(cfg_name=None):
             candidates = list(ce.getObjectsFrom(ce.scene, ce.isStreetConfiguration))
         except Exception:
             candidates = []
-
+            
     if candidates:
         if cfg_name is None:
             print("StreetConfigurations available:", len(candidates))
@@ -169,8 +169,16 @@ def createStreetConfigurationExample():
     return cfg
 
 
-def create_random_city():
-    graphlayer = ce.addGraphLayer("streets")
+def get_street_configurations():
+    configs = ce.getStreetConfigurations()
+    print("StreetConfiguration type:", type(configs[0]))
+
+
+BUILDING_RULE = "parametrized_building_rule.cga"
+#BUILIDNG_RULE = "paris.cga"
+
+def create_random_city(city_name, level_of_detail="LOD3"):
+    graphlayer = ce.addGraphLayer(city_name)
     vertices = [0, 0, -1000, 0, 0, 1000]
     graph = ce.createGraphSegments(graphlayer, vertices)
     ce.setName(graph, "main_road")
@@ -213,6 +221,7 @@ def create_random_city():
 
     # konfiguracja ulic
     streetCfg = getStreetConfigurationByName("Neighborhood_Alley_1Way_1VL_10m")
+    #streetCfgs = ce.getStreetConfigurations() # some provided street configurations produce errors on current graph's topology
 
     # Collect ALL graph segments in the scene (streets)
     if hasattr(ce, "isGraphSegment"):
@@ -228,6 +237,7 @@ def create_random_city():
         print("No StreetConfiguration applied (not found).")
     else:
         for seg in segments:
+            #ce.applyStreetConfigurationToSegment(seg, random.choice(streetCfgs))
             ce.applyStreetConfigurationToSegment(seg, streetCfg)
 
     objects = ce.getObjectsFrom(ce.scene, ce.withName("Block"))
@@ -244,19 +254,23 @@ def create_random_city():
     for shape in objects:
         if ce.getStartRule(shape) == "Default$Lot":
             ce.setName(shape, "lot")
-            ce.setRuleFile(shape, "rules/paris.cga")
+            ce.setRuleFile(shape, f"rules/{BUILDING_RULE}")
         elif ce.getStartRule(shape) == "Lot":
             ce.setName(shape, "lot")
-            ce.setRuleFile(shape, "rules/paris.cga")
+            ce.setRuleFile(shape, f"rules/{BUILDING_RULE}")
+        # unnecessary ?
         elif ce.getStartRule(shape) == "Default$LotInner":
             ce.setName(shape, "lot")
-            ce.setRuleFile(shape, "rules/paris.cga")
+            ce.setRuleFile(shape, f"rules/{BUILDING_RULE}")
         elif ce.getStartRule(shape) == "Default$LotCorner":
-            ce.setName(shape, "LotCorner")
-            ce.setRuleFile(shape, "rules/paris.cga")
+            #ce.setName(shape, "LotCorner") # for convenience in set_attribute_value(), starting rule LotCorner still prevails
+            ce.setName(shape, "lot")
+            ce.setRuleFile(shape, f"rules/{BUILDING_RULE}")
         else:
             ce.setName(shape, "street")
-            ce.setRuleFile(shape, "rules/Streets_Advanced/Advanced_Street.cga")
+            ce.setRuleFile(shape, "/ESRI.lib/rules/Streets/Street_Modern_Standard.cga")
+            #ce.setRuleFile(shape, "rules/Streets_Advanced/Advanced_Street.cga")
+
 
     # junctions = ce.getObjectsFrom(ce.scene, ce.withName("Shape"))
     # for junction in junctions:
@@ -273,17 +287,27 @@ def create_random_city():
         # ce.setAttributeSource(block,'/ce/block/subdivisionRecursive',"USER")
         # ce.setAttribute(block,'/ce/block/type','Offset Subdivision')
 
+    #parameters_string = ";".join(map(str, parameters_list))
+
+    
     objects = ce.getObjectsFrom(ce.scene, ce.withName("lot"))
     for buildings in objects:
-        ce.setAttributeSource(buildings, "/ce/rule/High_LoD", "USER")
-        ce.setAttribute(buildings, "/ce/rule/High_LoD", True)
+        
+        ce.setAttributeSource(buildings, "/ce/rule/LOD", "USER")
+        ce.setAttribute(buildings, "/ce/rule/LOD", level_of_detail)
+        # somehow code below doesn't work, but in isolation it does, parameter list are inserted later, after finished city-creation
+        #ce.setAttributeSource(buildings, "/ce/rule/PARAMETERS_LIST", "USER") 
+        #ce.setAttribute(buildings, "ce/rule/PARAMETERS_LIST", parameters_string)
 
+
+    # previous rules, not applying for current cga script (current name is 'lot')
     objects = ce.getObjectsFrom(ce.scene, ce.withName("LotCorner"))
-    for green in objects:
-        ce.setAttributeSource(green, "/ce/rule/High_LoD", "USER")
-        ce.setAttribute(green, "/ce/rule/High_LoD", True)
-        ce.setAttributeSource(green, "/ce/rule/ShowTrees", "USER")
-        ce.setAttribute(green, "/ce/rule/ShowTrees", "Realistic")
+    if objects:
+        for green in objects:
+            ce.setAttributeSource(green, "/ce/rule/High_LoD", "USER")
+            ce.setAttribute(green, "/ce/rule/High_LoD", True)
+            ce.setAttributeSource(green, "/ce/rule/ShowTrees", "USER")
+            ce.setAttribute(green, "/ce/rule/ShowTrees", "Realistic")
 
     # chodnik
     objects = ce.getObjectsFrom(ce.scene, ce.withName("street"))
@@ -318,5 +342,6 @@ def create_random_city():
     ce.generateModels(ce.getObjectsFrom(ce.scene))
     views = ce.getObjectsFrom(ce.get3DViews())
     views[0].frame()
+    ce.setSelection(None)   # just to make sure
     ce.waitForUIIdle()
     print("koniec")
